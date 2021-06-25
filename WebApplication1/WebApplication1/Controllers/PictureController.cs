@@ -181,7 +181,7 @@ namespace WebApplication1.Controllers
             var numberlike = context.Likespictures.Count(predicate => predicate.PId == picId);
             var numberfavorite = context.Favoritepictures.Count(predicate => predicate.PId == picId);
 
-            //获取图片信息、图片下载量、图片作者、上传时间。
+            //获取图片信息、图片下载量、图片作者、上传时间、作者头像。
             var pic = services.getPicture(picId);
             var Download = context.Downloads.Count(i => i.PId == picId);
             var LiUp=context.Publishpictures.FirstOrDefault(i => i.PId == picId);
@@ -189,6 +189,22 @@ namespace WebApplication1.Controllers
 
             var uploadTime = LiUp.PublishTime;
             var LiName = context.Users.FirstOrDefault(i => i.UId == LiUp.UId);
+
+            var info = context.Publishpictures.ToLookup(p => p.UId)[LiUp.UId].ToList();
+            info = info.OrderByDescending(o => o.PublishTime).ToList();//降序
+
+            var infoTag = context.Owntags.ToLookup(p => p.TagName)["avatar"].ToList();
+
+            String userAvatar = "";
+            for (int i = 0; i < infoTag.Count; i++)
+            {
+                var tempFindTag = info.Find(p => p.PId == infoTag[i].PId);
+                if (tempFindTag != null)
+                {
+                    userAvatar = context.Pictures.FirstOrDefault(p => p.PId == tempFindTag.PId).PUrl;
+                    break;
+                }
+            }
 
 
             //获取图片Tag
@@ -234,7 +250,8 @@ namespace WebApplication1.Controllers
 
                 uploadtime=uploadTime,
                 uploadName=LiName.UName,
-                pirce=pic.Price,
+                uploadURL= userAvatar,
+                pirce =pic.Price,
                 nowComment=piccomment
             }) ;
         }
@@ -414,10 +431,25 @@ namespace WebApplication1.Controllers
             var picList = context.Pictures.ToList();
             picList = picList.OrderByDescending(o => int.Parse(o.PId)).ToList();//降序
 
+            List<Picture> tempInfo = new List<Picture>();
+
+            int Exceptionsimg = 0;
+            for (int m = 0; m < picList.Count; m++)
+            {
+                //排除自己的头像.
+                var exceptionImage = context.Owntags.FirstOrDefault(p => p.PId == picList[m].PId && p.TagName == "avatar");
+                if (exceptionImage == null)
+                {
+                    tempInfo.Add(picList[m]);
+                    Exceptionsimg++;
+                }
+            }
+            picList = tempInfo;
+
 
             int nowPici = services.getPicNum();
 
-            for(int i= 4 * requestTimes;i< 4 * requestTimes+4&&i<nowPici;i++)
+            for(int i= 4 * requestTimes;i< 4 * requestTimes+4&&i< Exceptionsimg; i++)
             {
                 var pic = picList[i];
                 var pub = context.Publishpictures

@@ -25,6 +25,7 @@
                 text-align: center;
                 height: 600px">
         <el-image :src="pictureInfo.picUrl" style="border:3px solid #2c538e;"></el-image>
+
       </el-col>
 
       <el-col :span="8" style="height: 600px" :offset="2">
@@ -32,27 +33,29 @@
 
           <div style="display: flex;align-items:center;height: 100px">
 
-            <div style="height: 100px;padding-top:20px;
-            /*background: #2d8cf0;*/
-" >
-              <el-form-item prop="avatar" style="">
-                <el-avatar :src="pictureInfo.avatar" :size="ImgSize" shape="square" alt="作者暂无头像">
+            <div style="height: 100px;padding-top:20px;" >
+              <el-form-item prop="avatar">
+                <el-avatar :src="pictureInfo.avatar"
+                           :size="ImgSize"
+                           shape="square"
+                           alt="作者暂无头像"
+                           :data-title="pictureInfo.uploadName"
+                           class="author"
+                >
                 </el-avatar>
               </el-form-item>
             </div>
-<!--          <div>-->
-<!--            {{pictureInfo.uploadName}}-->
-<!--          </el-col>-->
-            <div style="padding-left: 100px; padding-top:60px; height: 100px;
-            /*background: #64bf2b*/
-">
-              <el-button type="primary"
+
+            <div style="padding-left: 100px; padding-top:60px; height: 100px;">
+              <el-button :type="followButton"
                          style="position: relative;
                          width: 80px;
                          height: 48px;
-                         font-size: 15px;
-                          " >关注</el-button>
+                         font-size: 15px;"
+                         @click="followUser"
+              >关注</el-button>
             </div>
+
           </div>
 
           <el-divider></el-divider>
@@ -62,7 +65,7 @@
               <el-form-item prop="numberLike" >
                 <el-badge :value=pictureInfo.numberLike class="item">
                   <el-button type="primary"  style="width: 100px;height: 60px;font-weight:bolder;font-size: 18px"
-                             @click="changeIcon1($event,i)">
+                             @click="changeIcon1()">
                     <i :class="likeicon" style="padding-right: 5px"></i>
                     点赞</el-button>
                 </el-badge>
@@ -74,7 +77,7 @@
 
                 <el-badge :value=pictureInfo.numberFavorite class="item">
                   <el-button type="primary"  style="width: 100px;height: 60px;font-weight:bolder;font-size: 18px"
-                             @click="changeIcon2($event,i)">
+                             @click="changeIcon2()">
                     <i :class="favoriteicon" style="padding-right: 5px"></i>
                     收藏</el-button>
                 </el-badge>
@@ -154,7 +157,7 @@
 
           <div class="commList">
 
-            <div class="commitem" v-for="(item,i) in pictureInfo.comments" :key="i" >
+            <div class="commitem" v-for="(item,i) in pictureInfo.comments" :key="item.userId" >
               <el-card style="width: 600px;height: 200px;background: #ece9cc;"
                        :body-style="{padding:'0px' }"
                        shadow="hover">
@@ -189,14 +192,15 @@ export default {
       tempId:"",
       likeicon:"el-icon-minus",
       favoriteicon:"el-icon-star-off",
+      followButton:"primary",
+
       pictureInfo:{
         picUrl:require("../assets/img/xiu.jpg"),
         publisherId:"0",
-
         publisherFollow:false,
+
         picLike:false,
         picStar:false,
-
         numberLike:0,
         numberFavorite:0,
 
@@ -234,7 +238,6 @@ export default {
         message:[{ required: true, message: '请填写简介', trigger: 'blur' }],
         email:[{ required: true, message: '请填写邮箱', trigger: 'blur' }],
       },
-
     }
   },
 
@@ -258,25 +261,243 @@ export default {
   },
 
   methods:{
-    changeIcon1(event,key){
-      if(this.likeicon==="el-icon-minus")
+    followUser(){
+      let _this=this;
+      let temp="?FansId="+sessionStorage.getItem("userId")+'&followId='+_this.pictureInfo.publisherId;
+      if(_this.followButton==="primary")
       {
-        this.likeicon="el-icon-plus";
+        _this.$axios(
+            {
+              method:'post',
+              url:'http://localhost:6306/Account/followUser'+temp,
+              headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Authorization': 'Bearer ' + sessionStorage.getItem("token")
+              },
+            }).then(function(response) {
+          let Temp=response.data;
+          // console.log(Temp);
+          if(Temp.success)
+          {
+            _this.$message({
+              message: '关注发布者',
+              duration:1000,
+              type: 'success'
+            });
+            _this.followButton="danger";
+            _this.pictureInfo.publisherFollow=true;
+
+          }
+          else{
+            _this.$message.error('关注失败');
+            console.log('error 关注失败!!');
+            return false;
+          }
+
+        }).catch(function(response) {
+          _this.$message.error('获取后端接口失败');
+          console.log('error 获取后端接口失败!!',response);
+          return false;
+        });
       }
       else{
-        this.likeicon="el-icon-minus";
-      }
+        _this.$axios(
+            {
+              method:'post',
+              url:'http://localhost:6306/Account/followUser'+temp,
+              headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Authorization': 'Bearer ' + sessionStorage.getItem("token")
+              },
+            }).then(function(response) {
+          let Temp=response.data;
+          // console.log(Temp);
+          if(Temp.success)
+          {
+            _this.$message({
+              message: '取消关注发布者',
+              duration:1000,
+              type: 'success'
+            });
+            _this.followButton="primary";
+            _this.pictureInfo.publisherFollow=false;
 
+          }
+          else{
+            _this.$message.error('取消关注发布者失败');
+            console.log('error 取消关注发布者失败!!');
+            return false;
+          }
+
+        }).catch(function(response) {
+          _this.$message.error('获取后端接口失败');
+          console.log('error 获取后端接口失败!!',response);
+          return false;
+        });
+      }
     },
 
-    changeIcon2(event,key){
-      if(this.favoriteicon==="el-icon-star-off")
+
+    changeIcon1(){
+      let _this=this;
+      if(_this.likeicon==="el-icon-minus")
       {
-        this.favoriteicon="el-icon-star-on";
+        //点赞
+        _this.$axios(
+            {
+              method:'post',
+              url:'http://localhost:6306/Picture/likePicture?userId='
+                  +sessionStorage.getItem("userId")+'&picId='+_this.tempId+"&Type=LK",
+              headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Authorization': 'Bearer ' + sessionStorage.getItem("token")
+              },
+            }).then(function(response) {
+          let Temp=response.data;
+          // console.log(Temp);
+          if(Temp.success)
+          {
+            _this.$message({
+              message: '点赞',
+              duration:1000,
+              type: 'success'
+            });
+            _this.likeicon="el-icon-plus";
+            _this.pictureInfo.picLike=true;
+
+          }
+          else{
+            _this.$message.error('点赞失败');
+            console.log('error 点赞失败!!');
+            return false;
+          }
+
+        }).catch(function(response) {
+          _this.$message.error('获取后端接口失败');
+          console.log('error 获取后端接口失败!!',response);
+          return false;
+        });
       }
       else{
-        this.favoriteicon="el-icon-star-off";
+        //取消点赞
+        _this.$axios(
+            {
+              method:'post',
+              url:'http://localhost:6306/Picture/likePicture?userId='
+                  +sessionStorage.getItem("userId")+'&picId='+_this.tempId+"&Type=LK",
+              headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Authorization': 'Bearer ' + sessionStorage.getItem("token")
+              },
+            }).then(function(response) {
+          let Temp=response.data;
+          // console.log(Temp);
+          if(Temp.success)
+          {
+            _this.$message({
+              message: '取消点赞',
+              duration:1000,
+              type: 'success'
+            });
+            _this.likeicon="el-icon-minus";
+            _this.pictureInfo.picLike=false;
+
+          }
+          else{
+            _this.$message.error('取消点赞失败');
+            console.log('error 取消点赞失败!!');
+            return false;
+          }
+
+        }).catch(function(response) {
+          _this.$message.error('获取后端接口失败');
+          console.log('error 获取后端接口失败!!',response);
+          return false;
+        });
+
+
       }
+    },
+
+    changeIcon2(){
+      let _this=this;
+
+      if(_this.favoriteicon==="el-icon-star-off")
+      {
+        //点赞
+        _this.$axios(
+            {
+              method:'post',
+              url:'http://localhost:6306/Picture/favoritePicture?userId='
+                  +sessionStorage.getItem("userId")+'&picId='+_this.tempId,
+              headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Authorization': 'Bearer ' + sessionStorage.getItem("token")
+              },
+            }).then(function(response) {
+          let Temp=response.data;
+          // console.log(Temp);
+          if(Temp.success)
+          {
+            _this.$message({
+              message: '收藏',
+              duration:1000,
+              type: 'success'
+            });
+            _this.favoriteicon="el-icon-star-on";
+            _this.pictureInfo.picStar=true;
+
+          }
+          else{
+            _this.$message.error('收藏失败');
+            console.log('error 收藏失败!!');
+            return false;
+          }
+
+        }).catch(function(response) {
+          _this.$message.error('获取后端接口失败');
+          console.log('error 获取后端接口失败!!',response);
+          return false;
+        });
+      }
+      else{
+        //取消点赞
+        _this.$axios(
+            {
+              method:'post',
+              url:'http://localhost:6306/Picture/favoritePicture?userId='
+                  +sessionStorage.getItem("userId")+'&picId='+_this.tempId,
+              headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Authorization': 'Bearer ' + sessionStorage.getItem("token")
+              },
+            }).then(function(response) {
+          let Temp=response.data;
+          // console.log(Temp);
+          if(Temp.success)
+          {
+            _this.$message({
+              message: '取消收藏',
+              duration:1000,
+              type: 'success'
+            });
+            _this.favoriteicon="el-icon-star-off";
+            _this.pictureInfo.picStar=false;
+
+          }
+          else{
+            _this.$message.error('取消收藏失败');
+            console.log('error 取消收藏失败!!');
+            return false;
+          }
+
+        }).catch(function(response) {
+          _this.$message.error('获取后端接口失败');
+          console.log('error 获取后端接口失败!!',response);
+          return false;
+        });
+      }
+
     },
 
     Download(){
@@ -304,8 +525,9 @@ export default {
               duration:1000,
               type: 'success'
             });
-            window.location.href = 'http://localhost:6306/favicon.ico';
             _this.pictureInfo.hasDownload=true;
+
+            window.location.href = Temp.downloadUrl;
           }
           else{
             if(Temp.msg==="Lack of Coin")
@@ -335,8 +557,6 @@ export default {
 
     },
 
-
-
     writeComment(){
       let _this=this;
 
@@ -344,7 +564,7 @@ export default {
 
       _this.$refs.comment.validate(valid => {
         if (valid) {
-          console.log("写评论",this.pictureInfo.myComment);
+          // console.log("写评论",this.pictureInfo.myComment);
 
           let loginData = JSON.stringify({
             "userId": sessionStorage.getItem("userId"),
@@ -362,7 +582,7 @@ export default {
             },
             data:loginData
           }).then(function(response) {
-            console.log("成功",response.data)
+            // console.log("成功",response.data)
             let Temp=response.data;
 
             if(Temp.success)
@@ -412,12 +632,21 @@ export default {
           },
         }).then(function(response) {
       let Temp=response.data;
-      console.log(Temp);
+      // console.log(Temp);
+
       _this.pictureInfo.picUrl=Temp.picUrl;
 
       _this.pictureInfo.uploadName=Temp.uploadName;
+      _this.pictureInfo.avatar=Temp.uploadURL;
+      _this.pictureInfo.publisherId=Temp.publisherId;
+      _this.pictureInfo.publisherFollow=Temp.publisherFollow;
+
       _this.pictureInfo.picStar=Temp.picStar;
       _this.pictureInfo.picLike=Temp.picLike;
+
+      _this.pictureInfo.numberLike=Temp.numberLike;
+      _this.pictureInfo.numberFavorite=Temp.numberFavorite;
+
       _this.pictureInfo.hasDownload=Temp.hasDownload;
 
       _this.pictureInfo.picInfo=Temp.picInfo;
@@ -433,6 +662,18 @@ export default {
       _this.pictureInfo.uploadtime=Temp.uploadtime;
 
       console.log(_this.pictureInfo)
+      // console.log("OK?",_this.pictureInfo.picLike);
+
+      if(_this.pictureInfo.picLike){
+        _this.likeicon="el-icon-plus";
+      }
+      if(_this.pictureInfo.picStar){
+        _this.favoriteicon="el-icon-star-on";
+      }
+      if(_this.pictureInfo.publisherFollow){
+        _this.followButton="danger";
+      }
+
 
     }).catch(function(response) {
       _this.$message.error('获取后端接口失败');
@@ -457,6 +698,11 @@ export default {
       console.log('error 获取后端接口失败!!',response);
       return false;
     });
+
+
+
+
+
 
   },
 }
@@ -544,5 +790,19 @@ export default {
   padding-top: 20px;
 }
 
+
+
+.author:hover::after {
+  content: attr(data-title);
+  display: inline-block;
+  padding: 10px 14px;
+  color: black;
+  font-size: 25px;
+  /*border: 1px solid #ddd;*/
+  /*border-radius: 1px;*/
+  position: absolute;
+  top: -80px;
+  left: 20px;
+}
 
 </style>

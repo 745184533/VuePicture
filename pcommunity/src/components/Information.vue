@@ -26,7 +26,7 @@
 
       <el-col :span=3>
         <el-badge :value="userInfo.staticNumber.LikeNum">
-        <el-form-item prop="staticNumber.LikeNum" label="上传数">
+        <el-form-item prop="staticNumber.LikeNum" label="点赞数">
           <i class="el-icon-check"></i>
 
         </el-form-item>
@@ -48,7 +48,23 @@
 
 
     <el-form-item prop="avatar" label="个人头像">
-        <el-image :src="userInfo.avatar"></el-image>
+
+      <el-upload
+          class="avatar-uploader"
+          action=""
+          :show-file-list="false"
+          :on-success="handleAvatarSuccess"
+          :limit="1"
+          :on-change="getAvatar"
+          :auto-upload="false"
+          :before-upload="beforeAvatarUpload">
+        <img v-if="userInfo.avatar" :src="userInfo.avatar" class="avatar">
+        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+      </el-upload>
+      <el-button type="primary" @click="postAvatar">上传</el-button>
+
+      <!--        <el-image :src="userInfo.avatar"></el-image>-->
+
     </el-form-item>
 
     <el-form-item prop="birthday" label="生日">
@@ -94,12 +110,16 @@
 <script>
 export default {
   name: "Information",
+
   data(){
     return{
 
+      Image:'',
       userInfo:{
         userName:"",
-        avatar:"https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png",
+        // avatar:"https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png",
+        avatar:"",
+
         birthday:"",
         phoneNumber:"",
         message:"",
@@ -122,6 +142,7 @@ export default {
       }
     }
   },
+
   methods:{
 
     modifyInfo(){
@@ -186,7 +207,70 @@ export default {
           return false;
         }
       });
+    },
+
+    handleAvatarSuccess(res, file) {
+      this.userInfo.avatar = URL.createObjectURL(file.raw);
+    },
+
+
+    beforeAvatarUpload(file) {
+      const isJPG = file.type === 'image/jpeg';
+      const isLt2M = file.size / 2048 / 2048 < 2;
+
+      if (!isJPG) {
+        this.$message.error('上传头像图片只能是 JPG 格式!');
+      }
+      if (!isLt2M) {
+        this.$message.error('上传头像图片大小不能超过 8MB!');
+      }
+      return isJPG && isLt2M;
+    },
+
+    getAvatar(file){
+      let _this=this;
+      console.log(file);
+      let selectedFile=file;
+      let name = selectedFile.name; //选中文件的文件名
+      let size = selectedFile.size; //选中文件的大小
+      console.log("文件名:" + name + "大小:" + size);
+      _this.Image=file.raw;
+    },
+
+
+    postAvatar(){
+      let _this=this;
+      let pictureData=new FormData();
+      pictureData.append('', _this.Image)
+      pictureData.append('userId', sessionStorage.getItem("userId"))
+        pictureData.append('tag', 'avatar');
+      pictureData.append('Pinfo', 'null')
+      pictureData.append('Price', 0)
+
+      _this.$axios({
+        method:'post',
+        url:'http://localhost:6306/Account/Upload',
+        headers: {
+          'Content-Type':'application/x-www-form-urlencoded',
+          'Access-Control-Allow-Origin': '*',
+        },
+        data:pictureData
+      }).then(function(response) {
+        console.log("成功",response.data)
+        _this.$message.success('图片上传成功');
+        // _this.dialogVisible = false;
+
+        let Temp=response.data;
+        _this.userInfo.avatar=Temp.pictureURL;
+        console.log(_this.userInfo.avatar);
+
+      }).catch(function(response) {
+        _this.$message.error('获取后端接口失败');
+        console.log('error 获取后端接口失败!!',response);
+        return false;
+      })
     }
+
   },
 
   mounted:function() {
@@ -212,6 +296,7 @@ export default {
       _this.userInfo.phoneNumber=Temp.phoneNumber;
       _this.userInfo.birthday=Temp.birthday.slice(0,10);
       _this.userInfo.userName=Temp.userName;
+      _this.userInfo.avatar=Temp.userAvatar;
 
       // console.log(_this.userInfo.birthday);
     }).catch(function(response) {
@@ -248,6 +333,39 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
+#app /deep/ .el-upload{
+  width: 180px;
+}
 
+#app /deep/ .el-upload--text{
+  width: 180px;
+}
+</style>
+
+<style scoped>
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  width:180px;
+}
+.avatar-uploader .el-upload:hover {
+  border-color: #409EFF;
+}
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+}
+.avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
 </style>

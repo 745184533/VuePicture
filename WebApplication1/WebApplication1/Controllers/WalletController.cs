@@ -32,10 +32,28 @@ namespace WebApplication1.Controllers
         {
             var user = context.Users.FirstOrDefault(u => u.UId == userId);
             var wallet = context.Wallets.FirstOrDefault(u => u.UId == userId);
+
+            var info = context.Publishpictures.ToLookup(p => p.UId)[user.UId].ToList();
+            info = info.OrderByDescending(o => o.PublishTime).ToList();//降序
+
+            var infoTag = context.Owntags.ToLookup(p => p.TagName)["avatar"].ToList();
+
+            String userAvatar = "";
+            for (int i = 0; i < infoTag.Count; i++)
+            {
+                var tempFindTag = info.Find(p => p.PId == infoTag[i].PId);
+                if (tempFindTag != null)
+                {
+                    userAvatar = context.Pictures.FirstOrDefault(p => p.PId == tempFindTag.PId).PUrl;
+                    break;
+                }
+            }
+
             return Ok(new
             {
                 Success = true,
                 UserName = user.UName,
+                UserAvatar=userAvatar,
                 NowCoin = wallet.Coin,
                 BuyNum = wallet.BuyNum,
                 msg = "Operation Done"
@@ -54,7 +72,7 @@ namespace WebApplication1.Controllers
                 UId = nowWallet.UId,
                 Coin = nowWallet.Coin + amount,
                 PublishNum = nowWallet.PublishNum,
-                BuyNum = nowWallet.BuyNum + 1
+                //BuyNum = nowWallet.BuyNum + 1
             });
             context.SaveChanges();
             //

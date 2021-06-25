@@ -167,6 +167,7 @@ export default {
       // console.log(Temp);
       _this.myWallet.coin=Temp.nowCoin;
       _this.myWallet.buyNum=Temp.buyNum;
+      _this.myWallet.avatar=Temp.userAvatar;
       // console.log(_this.myWallet);
 
     }).catch(function(response) {

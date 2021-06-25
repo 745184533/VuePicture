@@ -1,7 +1,5 @@
-const ENV = process.env.NODE_ENV;
-
 module.exports = {
-  publicPath: ENV === "development" ? "./" : "/PictureVue/",
+  publicPath: './',
 
   devServer: {
     port: 8055, // 端口

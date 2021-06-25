@@ -1,6 +1,6 @@
 <template>
   <div class="imageList">
-    <div class="SingleImage" v-for="(item,i) in srcList" :key="i" v-if="i<10">
+    <div class="SingleImage" v-for="(item,i) in srcList" :key="i" >
       <el-card style="width: 300px;height: 391px;" :body-style="{padding:'0px' }" shadow="hover">
         <img :src=item.thatpicture.pUrl alt="暂无图片"   class="image" @click="showPicture(item.thatpicture.pId)">
         <div style="padding: 14px;">
@@ -183,7 +183,7 @@ export default {
   },
   methods:{
     showPicture(key){
-      let temp="?userId="+sessionStorage.getItem("userId")+"&picId="+key
+      let temp="?picId="+key;
       this.$router.push("/pictureShow"+temp);
     },
   },
@@ -246,8 +246,10 @@ export default {
 .image {
   width: 100%;
   display: block;
+  min-height: 300px;
 }
-.item{
-  padding-right: 15px;
+.item {
+  margin-top: 10px;
+  margin-right: 15px;
 }
 </style>

@@ -147,23 +147,11 @@ namespace WebApplication1.Controllers
             }
         }
 
-        /// <summary>
-        /// 获取当前所有用户信息
-        /// </summary>
-        /// <returns></returns>
-        [Route("getAllUsers")]
-        [HttpGet]
-        public IEnumerable<User> getAllUsers()
-        {
-            Calclock.startClock();
-            return context.Users.ToArray();
-        }
-
         [Route("TestClock")]
         [HttpGet]
         public int TestClock()
         {
-            
+
             return Calclock.startClock();
         }
 
@@ -196,6 +184,16 @@ namespace WebApplication1.Controllers
             a.testRule(filename, out b);
             return b;
         }
+        /// <summary>
+        /// 获取当前所有用户信息
+        /// </summary>
+        /// <returns></returns>
+        [Route("getAllUsers")]
+        [HttpGet]
+        public IEnumerable<User> getAllUsers()
+        {
+            return context.Users.ToArray();
+        }
 
 
         /// <summary>
@@ -221,10 +219,29 @@ namespace WebApplication1.Controllers
                         msg = "No such User"
                     });
                 }
+
+                var info = context.Publishpictures.ToLookup(p => p.UId)[userId].ToList();
+                info = info.OrderByDescending(o => o.PublishTime).ToList();//降序
+
+                var infoTag = context.Owntags.ToLookup(p => p.TagName)["avatar"].ToList();
+
+                String userAvatar="";
+                for (int i=0;i<info.Count;i++)
+                {
+                    var tempFindTag=infoTag.Find(p=>p.PId== info[i].PId);
+                    if(tempFindTag!=null)
+                    {
+                        userAvatar = context.Pictures.FirstOrDefault(p => p.PId == tempFindTag.PId).PUrl;
+                        break;
+                    }
+                }
+
+
                 return Ok(new
                 {
                     Success = true,
                     //Picture=
+                    UserAvatar=userAvatar,
                     UserName = user.UName,
                     Name = userInfo.UName,
                     Birthday = userInfo.Birthday,
@@ -305,6 +322,18 @@ namespace WebApplication1.Controllers
             //我的上传
             var info = context.Publishpictures.ToLookup(p => p.UId)[userId].ToList();
             info = info.OrderByDescending(o => o.PublishTime).ToList();//降序
+            List<Publishpicture> tempInfo =new List<Publishpicture>();
+            for(int m=0;m<info.Count;m++)
+            {
+                //排除自己的头像.
+                var exceptionImage=context.Owntags.FirstOrDefault(p => p.PId == info[m].PId&&p.TagName=="avatar");
+                if (exceptionImage == null)
+                {
+                    tempInfo.Add(info[m]);
+                }
+            }
+            info = tempInfo;
+
             //我的收藏
             var infos = context.Favoritepictures.ToLookup(p => p.UId)[userId].ToList();
             infos = infos.OrderByDescending(o => o.PId).ToList();//降序

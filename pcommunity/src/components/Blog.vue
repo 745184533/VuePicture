@@ -292,7 +292,7 @@ export default {
 .BlogList{
   display: flex;
   flex-direction:column;
-  /*height: 500px;*/
+  min-height: 400px;
   width: 100%;
   /*overflow-y: auto;*/
   align-items: safe center;
