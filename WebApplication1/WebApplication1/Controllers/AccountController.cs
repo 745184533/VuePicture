@@ -11,11 +11,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using WebApplication1.EFModels;
+
 using WebApplication1.Services;
 using WebApplication1.ViewsModel;
 using WebApplication1.ViewsModels;
 using WebApplication1.Tools;
 using Microsoft.EntityFrameworkCore;
+using clockMe;
+using System.Runtime.InteropServices;
 
 namespace WebApplication1.Controllers
 {
@@ -152,7 +155,28 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public IEnumerable<User> getAllUsers()
         {
+            Calclock.startClock();
             return context.Users.ToArray();
+        }
+
+        [Route("TestClock")]
+        [HttpGet]
+        public int TestClock()
+        {
+            
+            return Calclock.startClock();
+        }
+
+        [DllImport("Util.dll", CallingConvention = CallingConvention.Cdecl)]
+        public extern static string getFileName(string path);
+        
+
+        [Route("TestDLL")]
+        [HttpGet]
+        public string TestDLL(string filename)
+        {
+            
+            return getFileName(filename);
         }
 
 

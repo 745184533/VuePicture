@@ -3,10 +3,17 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>3d69c241-d87b-4b45-98cf-316020ea6763</UserSecretsId>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile>F:\MyCode\MyC#\picCommunity\WebApplication1\WebApplication1\WebApplication1.xml</DocumentationFile>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <DocumentationFile>F:\MyCode\MyC#\picCommunity\WebApplication1\WebApplication1\WebApplication1.xml</DocumentationFile>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,6 +42,33 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\img\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AccountService">
+      <HintPath>..\AccountService\bin\x64\Debug\netcoreapp3.1\AccountService.dll</HintPath>
+    </Reference>
+    <Reference Include="BlogService">
+      <HintPath>..\BlogService\bin\Debug\netcoreapp3.1\BlogService.dll</HintPath>
+    </Reference>
+    <Reference Include="clock">
+      <HintPath>clock.dll</HintPath>
+    </Reference>
+    <Reference Include="EFModel">
+      <HintPath>..\EFModel\bin\x64\Debug\netcoreapp3.1\EFModel.dll</HintPath>
+    </Reference>
+    <Reference Include="PictureService">
+      <HintPath>..\PictureService\bin\Debug\netcoreapp3.1\PictureService.dll</HintPath>
+    </Reference>
+    <Reference Include="Tools">
+      <HintPath>..\Tools\bin\Debug\netcoreapp3.1\Tools.dll</HintPath>
+    </Reference>
+    <Reference Include="ViewModels">
+      <HintPath>..\ViewModels\bin\Debug\netcoreapp3.1\ViewModels.dll</HintPath>
+    </Reference>
+    <Reference Include="WalletService">
+      <HintPath>..\WalletService\bin\Debug\netcoreapp3.1\WalletService.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
