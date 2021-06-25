@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using WebApplication1.EFModels;
-
 using WebApplication1.Services;
 using WebApplication1.ViewsModel;
 using WebApplication1.ViewsModels;
@@ -19,6 +18,7 @@ using WebApplication1.Tools;
 using Microsoft.EntityFrameworkCore;
 using clockMe;
 using System.Runtime.InteropServices;
+using ATLProjectLib;
 
 namespace WebApplication1.Controllers
 {
@@ -168,15 +168,33 @@ namespace WebApplication1.Controllers
         }
 
         [DllImport("Util.dll", CallingConvention = CallingConvention.Cdecl)]
-        public extern static string getFileName(string path);
-        
+        public extern static IntPtr getFileName(string path);
+
+        [DllImport("Util.dll", CallingConvention = CallingConvention.Cdecl)]
+        public extern static int getFileID(string path);
+
 
         [Route("TestDLL")]
         [HttpGet]
         public string TestDLL(string filename)
         {
-            
-            return getFileName(filename);
+            //Console.WriteLine("开始？");
+            IntPtr pRet = getFileName(filename);
+            Console.WriteLine(pRet);
+            string strRet = Marshal.PtrToStringAnsi(pRet);
+            Console.WriteLine(strRet);
+
+            return strRet;
+        }
+
+        [Route("TestCom")]
+        [HttpGet]
+        public long TestCom(int filename)
+        {
+            Simple a = new Simple();
+            int b = 0;
+            a.testRule(filename, out b);
+            return b;
         }
 
 
